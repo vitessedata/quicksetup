@@ -11,6 +11,8 @@ User must be able to sudo.  We install software to typical locations.
 Database and data are stored in $DATADIR, default to $DIR/data, and can
 be changed in env.sh.  User must create this dir and have write permission.
 
+Next, run each of the following shell scritps.
+
 ## 00\_setup.sh
 First run this, it basically update OS, install tmux, and update /bin/sh
 to use /bin/bash.   Ubuntu 16 by default will symlink /bin/sh to /bin/dash.
@@ -31,5 +33,12 @@ Verify that you can connect to the database.
 source deepgreendb/greenplum_path.sh
 psql
 ```
+
+## 04\_xdrive.sh
+Setup xdrive and related stuff.
+
+## 05\_sql.sh
+Setup a bunch of SQL scrtips.
+
 
 

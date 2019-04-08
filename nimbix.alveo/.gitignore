@@ -1,0 +1,11 @@
+deepgreendb
+deepgreendb*
+*.bin
+*.gz
+*.1
+*.2
+*.3
+data
+monagent
+xdrive
+xdrive.toml

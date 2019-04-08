@@ -25,5 +25,5 @@ xdrctl deploy ./xdrive.toml
 xdrctl start ./xdrive.toml
 
 mkdir -p $DIR/xdrive/plugin/dgtools && pass || fail
-cp ./ls_file $DIR/xdrive/plugin/dgtools/ && pass || fail
+cp ../xdrive/ls_file $DIR/xdrive/plugin/dgtools/ && pass || fail
 tar -C ./xdrive/images -xzf 101_ObjectCategories.tar.gz && pass || fail

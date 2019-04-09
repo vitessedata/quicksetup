@@ -40,5 +40,13 @@ Setup xdrive and related stuff.
 ## 05\_sql.sh
 Setup a bunch of SQL scrtips.
 
+## Start googlenet server.
+```
+cd py
+. ./conda2.sh
+./rungnet.sh
+```
+
+
 
 

@@ -1,35 +1,10 @@
-drop external table imagefiles;
-create external table imagefiles
-(
-    dir text,
-    basename text,
-    size text,
-    mode text,
-    modtime text,
-    isdir text,
-    content_base64 text
-) location ('xdrive://127.0.0.1:31416/images/**') 
-format 'csv';
-
-drop function textcol(i int);
-create function textcol(i int) returns text as 
-$$ select dg_utils.transducer_column_text($1); $$ 
-language sql;
-
-drop function i4col(i int);
-create function i4col(i int) returns int as 
-$$ select dg_utils.transducer_column_int4($1); $$ 
-language sql;
-
-drop function f4col(i int);
-create function f4col(i int) returns float4 as 
-$$ select dg_utils.transducer_column_float4($1); $$ 
-language sql;
-
-drop function gnet();
-create function gnet () returns bigint 
-as $BODY$ 
-select dg_utils.transducer($PHI$PhiExec python2
+-- explain analyze 
+select 
+dg_utils.transducer_column_text(1) as filename,
+dg_utils.transducer_column_int4(2) as nth, 
+dg_utils.transducer_column_float4(3) as score,
+dg_utils.transducer_column_text(4) as tag,
+dg_utils.transducer($PHI$PhiExec python2
 import vitessedata.phi as phi
 import vitessedata.phi.xdrive_pb2 as xdrive_pb2
 import vitessedata.phi.server as server
@@ -76,7 +51,10 @@ if __name__ == '__main__':
         for r in res:
             phi.WriteOutput(r)
     phi.WriteOutput(None)
-$PHI$)
-$BODY$
-language sql;
+$PHI$), t.*
+from (
+    select dir || '/' || basename from imagefiles where 
+    dir like '%panda%' and (basename like '%jpeg' or basename like '%jpg')
+) t
+;
 

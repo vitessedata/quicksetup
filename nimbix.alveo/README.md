@@ -7,9 +7,8 @@ Xilinx ML Suite Alveo U200 Development Kit.
 
 Edit env.sh as necessary.
 
-User must be able to sudo.  We install software to typical locations.
-Database and data are stored in $DATADIR, default to $DIR/data, and can
-be changed in env.sh.  User must create this dir and have write permission.
+User must be able to sudo.   User must set up ~/.ssh so that he/she
+can ssh localhost without password.
 
 Next, run each of the following shell scritps.
 
@@ -38,7 +37,8 @@ psql
 Setup xdrive and related stuff.
 
 ## 05\_sql.sh
-Setup a bunch of SQL scrtips.
+Setup a bunch of SQL scrtips.  You will see a few ERROR: xxx does not exist.  
+These are OK.
 
 ## Start googlenet server.
 ```
@@ -46,7 +46,24 @@ cd py
 . ./conda2.sh
 ./rungnet.sh
 ```
+These will start a googlnet image classifier on FPGA.  It will run in 
+foreground.   You can daemonize it if you want to, but I would just 
+let it run and print out stuff to console.
 
+## Run a test
+```
+. ./deepgreendb/greenplum_path.sh
+psql -f sql/gnet.sql 
+psql -f sql/gnet2.sql
+```
+This will run googlenet image classification on some pictures.  Table
+imagefiles contains the caltech 101 image dataset that is downloaded 
+in 01\_download.sh.   sql/gnet2.sql shows you can apply a SQL predicate
+(in the dir panda), the classification result can be put in a subquery 
+and then, further processed. 
 
-
-
+The following query will run googlenet on all caltech 101 dataset and 
+report timing.  
+```
+psql -f sql/gnetall.sql
+```

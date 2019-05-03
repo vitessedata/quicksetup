@@ -83,8 +83,14 @@ psql
 
 ## 04\_xdrive.sh
 Setup xdrive and related stuff.
+```
+bash ./04_xdrive.sh
+```
 
 ## 05\_sql.sh
 Setup a bunch of SQL scrtips.  You will see a few ERROR: xxx does not exist.  
 These are OK.
+```
+bash ./05_sql.sh
+```
 

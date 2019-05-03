@@ -89,8 +89,27 @@ bash ./04_xdrive.sh
 
 ## 05\_sql.sh
 Setup a bunch of SQL scrtips.  You will see a few ERROR: xxx does not exist.  
-These are OK.
+These are OK (try to drop a bunch of old table/functions before create new one).
 ```
 bash ./05_sql.sh
 ```
+At this time, you should be able to see image files from database.  Verify by running
+the following command
+```
+source deepgreendb/greenplum_path.sh
+psql
+```
+And in your sql prompt, run
+```
+select dir, basename, size from imagefiles limit 10;
+```
+Note that you probably do not want do do
+```
+select * from imagefiles
+```
+`*` will pull in all the content of imagefiles.   While the database will run fine, your 
+console/terminal probably won't be able to handle it.
+
+
+
 

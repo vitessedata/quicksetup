@@ -34,4 +34,40 @@ This script will update OS, install tmux, and update /bin/sh to use /bin/bash.
 Ubuntu 16 by default will symlink /bin/sh to /bin/dash. Vitessedata Deepgreen 
 requires bash. 
 
+## 01\_download.sh
+Download deepgreen binary and golang 1.9.5, install some python module.
+It also downloads some test images.
+```
+bash ./01_download.sh
+```
+
+## 02\_install.sh
+Deepgreen software installation.
+```
+bash ./02_install.sh
+```
+
+## 02.5 ssh keys
+If you have not setup ssh keys, you should do it now.  You can run the 
+following command.  BE CAREFUL: this will over-write your existing ssh keys.  
+```
+source deepgreendb/greenplum_path.sh
+gpssh-exkeys -f ./hostfile
+```
+
+## 03\_initdb.sh
+Initialize a deepgreen database instance.  Hit [y].
+After this step, you have a running database.   We have create database nimbix.
+Verify that you can connect to the database.
+```
+source deepgreendb/greenplum_path.sh
+psql
+```
+
+## 04\_xdrive.sh
+Setup xdrive and related stuff.
+
+## 05\_sql.sh
+Setup a bunch of SQL scrtips.  You will see a few ERROR: xxx does not exist.  
+These are OK.
 

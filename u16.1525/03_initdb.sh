@@ -9,4 +9,4 @@ rm -fr monagent && pass || fail
 mkdir -p monagent && pass || fail
 
 gpinitsystem -c cluster.conf --lc-collate=C
-createdb nimbix 
+createdb $USER

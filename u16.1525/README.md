@@ -56,6 +56,9 @@ gpssh-exkeys -f ./hostfile
 ```
 
 ## 03\_initdb.sh
+```
+bash ./03_initdb.sh
+```
 Initialize a deepgreen database instance.  Hit [y].
 After this step, you have a running database.   We have create database nimbix.
 Verify that you can connect to the database.

@@ -5,19 +5,6 @@ CPU must be `x86_64` with AVX.
 OS should be Ubuntu 1604 LTS
 FPGA is 1525, dsa is `xilinx_vcu1525_dynamic_5_1`
 
-You need to prepare your system according to  
-[Greenplum Confugration](https://gpdb.docs.pivotal.io/540/install_guide/prep_os_install_gpdb.html")
-A clean ubuntu 1604 LTS should just work fine, except you may need
-to disable RemoveIPC (fix systemd).  As root,
-
-```
-# edit /etc/systemd/logind.conf
-RemoveIPC=no
-
-# restart systemd-logind
-service systemd-logind restart
-```
-
 edit 
 User shell should be bash.  Using csh will definitely not work.
 To make sure we start with a clean environment, we recommend 
@@ -28,6 +15,16 @@ sudo bash ./user.sh
 
 It will create a user deepgreen, password deepGr33n, with sudo 
 capability.
+
+If you did not create new user but want to use an existing user,
+you may need to check RemoveIPC is set to no.   
+```
+# edit /etc/systemd/logind.conf
+RemoveIPC=no
+
+# restart systemd-logind
+service systemd-logind restart
+```
 
 Next, login as deepgreen or su deepgreen.  The following document
 assumes you have a clean user profile.

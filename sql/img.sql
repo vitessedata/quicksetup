@@ -1,4 +1,4 @@
-drop external table imagefiles;
+drop external table if exists imagefiles;
 create external table imagefiles
 (
     dir text,
@@ -11,22 +11,22 @@ create external table imagefiles
 ) location ('xdrive://127.0.0.1:31416/images/**') 
 format 'csv';
 
-drop function textcol(i int);
+drop function if exists textcol(i int);
 create function textcol(i int) returns text as 
 $$ select dg_utils.transducer_column_text($1); $$ 
 language sql;
 
-drop function i4col(i int);
+drop function if exists i4col(i int);
 create function i4col(i int) returns int as 
 $$ select dg_utils.transducer_column_int4($1); $$ 
 language sql;
 
-drop function f4col(i int);
+drop function if exists f4col(i int);
 create function f4col(i int) returns float4 as 
 $$ select dg_utils.transducer_column_float4($1); $$ 
 language sql;
 
-drop function gnet();
+drop function if exists gnet();
 create function gnet () returns bigint 
 as $BODY$ 
 select dg_utils.transducer($PHI$PhiExec python2

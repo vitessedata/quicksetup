@@ -19,6 +19,13 @@ Use Docker Image
 bash docker_run.sh
 ```
 
-
+Debug Docker 
+============
+```
+# Change the /home/ftian/oss/quicksetup to your path
+bash docker_dbg.sh
+```
+This will use the start.sh in the host.   You don't need
+to git submit every tiny change in order to take effect. 
 
 

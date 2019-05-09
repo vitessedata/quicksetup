@@ -116,8 +116,7 @@ RUN cd /home/mluser/quicksetup/u16.alveo && bash 02_install.sh
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh 
 
 # Automatically Set Environment Variables
-RUN echo "export PATH=$PATH:~/.local/bin" >> /home/mluser/.bashrc && \
- echo ". /opt/ml-suite/overlaybins/setup.sh" >> /home/mluser/.bashrc
+RUN echo "export PATH=$PATH:~/.local/bin" >> /home/mluser/.bashrc
 
 # Expose postgres (deepgreen), ssh, http, jupyter (default)
 EXPOSE 5432 22 80 8888

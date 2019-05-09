@@ -5,10 +5,15 @@ sudo locale-gen en_US.utf8
 # Start ssh
 sudo service ssh start
 
+MYIP="$(hostname -I)"
+
 # Some fixes for mluser setting
 echo ". /opt/ml-suite/overlaybins/setup.sh $PLATFORM" >> ~/.bashrc
 echo ". /home/mluser/quicksetup/u16.alveo/deepgreendb/greenplum_path.sh" >> ~/.bashrc
-{ ssh-keyscan localhost; ssh-keyscan 0.0.0.0; ssh-keyscan `hostname -I` } >> /home/mluser/.ssh/known_hosts
+ssh-keyscan localhost >> /home/mluser/.ssh/known_hosts
+ssh-keyscan 0.0.0.0 >> /home/mluser/.ssh/known_hosts
+ssh-keyscan dg >> /home/mluser/.ssh/known_hosts
+ssh-keyscan $MYID >> /home/mluser/.ssh/known_hosts
 
 # Create database.
 (cd /home/mluser/quicksetup/u16.alveo && bash 03_initdb.sh)

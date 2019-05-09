@@ -8,5 +8,5 @@ mkdir -p data && pass || fail
 rm -fr monagent && pass || fail
 mkdir -p monagent && pass || fail
 
-gpinitsystem -c cluster.conf --locale=C --lc-collate=C
+yes | gpinitsystem -c cluster.conf --locale=C --lc-collate=C
 createdb $USER

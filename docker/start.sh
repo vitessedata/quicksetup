@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# locale en_US.UTF-8 has an alias.
+sudo locale-gen en_US.utf8 
 # Start ssh
 sudo service ssh start
 

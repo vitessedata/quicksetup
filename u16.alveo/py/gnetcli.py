@@ -1,12 +1,6 @@
 #
-# 
-# A server running googlenet on FPGA.  See Xilinx ml-suite tutorial notebook
-# Right now, it is a multi threaded server, but each thread locks the device
+# googlenet test
 #
-import os, sys, cv2
-import threading
-
-import numpy as np
 
 import xdrive_pb2, server
 

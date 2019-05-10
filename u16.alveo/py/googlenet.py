@@ -1,6 +1,6 @@
 #
 # 
-# A server running googlenet on FPGA.  See Xilinx ml-suite tutorial notebook
+# A server running googlenet on FPGA.  See Xilinx ml-suite example test_classify.py 
 # Right now, it is a multi threaded server, but each thread locks the device
 #
 import os, sys
@@ -15,122 +15,76 @@ fpga_lock = threading.RLock()
 
 g_mlsuite = os.getenv("MLSUITE_ROOT", "/opt/MLsuite")
 g_platform = "alveo-u200"
-g_datadir = g_mlsuite + "/examples/classification/data"
 g_xclbin = g_mlsuite + "/overlaybins/alveo-u200/overlay_2.xclbin"
-g_netFile = g_datadir + "/googlenet_v1_56.json" 
-g_fpgaCfgFile = g_datadir + "/googlenet_v1_8b.json"
-g_doQuant = True
-g_xdnnLib = g_mlsuite + "/xfdnn/rt/xdnn_cpp/lib/libxfdnn.so"
-g_fpgaOutputSize = 1024
-g_firstFpgaLayerName = "conv1/7x7_s2"
-g_xdnnTestDataDir = g_datadir + "/googlenet_v1_data"
-g_lableFile = g_mlsuite + "/examples/classification/synset_words.txt"
-g_raw_scale = 255.0
-g_mean = [104.007, 116.669, 122.679]
-g_input_scale = 1.0
+g_datadir = g_mlsuite + "/examples/classification/data"
+g_netcfg = g_datadir + "/googlenet_v1_56.json" 
+g_fpgaoutsz = "1024"
+g_labels = g_mlsuite + "/examples/classification/synset_words.txt"
+g_quantizecfg = g_datadir + "/googlenet_v1_8b.json"
+g_img_input_scale = "1.0"
+g_batch_sz = "1"
 
-g_scaleA = 10000
-g_scaleB = 30
-g_img_shape = [3, 224, 224]
-g_outputSize = 1000
+g_args = {}
+g_ctxt = {}
 
-g_img_c = 3
-g_img_h = 224
-g_img_w = 224
-
-g_batchSize = 1
-g_numDevices = 1
-g_useBlas = False
-
-# Do not mess with this one.  Xilinx notebook set g_PE to 0
-# the code runs fine for a few images then crash.  Setting to
-# -1 seesm to run fine.
-g_PE = -1
-
-g_fcWeight = None
-g_fcBias = None
-g_weightsBlob = None
-g_labelarray = []
-g_inputs = None
-g_inputbuf = None
-g_fpgaOutput = None
 
 def init_fpga():
-    global g_inputs
-    global g_inputbuf
-    global g_fpgaOutput
-    global g_weightsBlob
-    global g_fcWeight
-    global g_fcBias
-    print (" --- INIT FPGA --- \n")
-    print ("xclbin: {0}.\n".format(g_xclbin))
-    print ("xdnnLib: {0}.\n".format(g_xdnnLib))
-    ret = xdnn.createManager(g_xdnnLib)
-    if ret != True:
-        raise SystemExit("Error: xdnn createManager failed.")
-    (g_fcWeight, g_fcBias) = xdnn_io.loadFCWeightsBias(g_xdnnTestDataDir)
+    # Instead of using command line, we hard code it here. 
+    # Typing correct args is almost impossible so either do it in .sh or .py
+    # 
+    global g_args
+    global g_ctxt
+    xdnnArgs = [
+            "--xclbin", g_xclbin,
+            "--netcfg", g_netcfg, 
+            "--fpgaoutsz", g_fpgaoutsz, 
+            "--datadir", g_datadir,
+            "--labels", g_labels, 
+            "--quantizecfg", g_quantizecfg,
+            "--img_input_scale", g_img_input_scale,
+            "--batch_sz", g_batch_sz,
+            "--images", "/tmp" 
+            ]
+    print(" --- INIT FPGA --- \n")
+    print(xdnnArgs)
+    g_args = xdnn_io.processCommandLine(xdnnArgs)
+    print(" --- After parsing --- \n")
+    print(g_args)
 
-    ret = xdnn.createHandle(g_xclbin, "kernelSxdnn_0", g_xdnnLib, g_numDevices) 
-    if ret:
-        raise SystemExit("ERROR: Unable to create handle to FPGA")
-    else:
-        print("INFO: Sucessfully create handle to FPGA.")
+    print(" --- Create handle --- \n")
+    ret, handles = xdnn.createHandle(g_args['xclbin'], "kernelSxdnn_0")
 
-    # magics.   See ml-suite/notebooks tutorial.   Should we overwrite PE?
-    args = { 'datadir': g_xdnnTestDataDir,
-             'quantizecfg': g_fpgaCfgFile,
-             'scaleA': g_scaleA,
-             'scaleB': g_scaleB,
-             'PE': -1,
-             'netcfg': g_netFile }
+    print(" --- Create fpgaRT --- \n")
+    fpgaRT = xdnn.XDNNFPGAOp(handles, g_args)
+    g_ctxt["fpgaRT"] = fpgaRT
 
-    print (" --- load weights --- \n")
-    g_weightsBlob = xdnn_io.loadWeightsBiasQuant(args)
+    print(" --- Weight and Bias --- \n")
+    fcWeight, fcBias = xdnn_io.loadFCWeightsBias(g_args)
+    g_ctxt["fcWeight"] = fcWeight
+    g_ctxt["fcBias"] = fcBias
 
-    print (" --- read lable file --- \n")
-    with open(g_lableFile, 'r') as f:
-        for line in f:
-            g_labelarray.append(line.strip())
+    g_ctxt['fpgaOutput'] = np.empty((g_args['batch_sz'], g_args['fpgaoutsz'],), dtype=np.float32, order='C')
+    g_ctxt['fcOutput'] = np.empty((g_args['batch_sz'], g_args['outsz'],), dtype=np.float32, order='C')
+    g_ctxt['batch_array'] = np.empty(((g_args['batch_sz'],) + g_args['in_shape']), dtype=np.float32, order='C')
+    g_ctxt['labels'] = xdnn_io.get_labels(g_args['labels'])
 
-    print (" --- prepare inputs --- \n")
-    g_inputs = np.zeros((g_batchSize, g_img_c, g_img_h, g_img_w), dtype=np.float32);
-    g_inputbuf = np.zeros((g_batchSize, g_img_c, g_img_h, g_img_w), dtype=np.float32);
+    # golden?   What is that?
+    # Seems we are done.
 
-    print "g_inputs", g_inputs
-
-    print (" --- prepare outputs --- \n")
-    g_fpgaOutput, fpgaHandle = xdnn.makeFPGAFloatArray(g_fpgaOutputSize * g_batchSize) 
-
-def get_classification(output, fn): 
+def get_classification(output, pl, labels, topK=5): 
     # See xdnn_io.py, but the code there will just print to stdout.
     # We return the values.
-    if isinstance (output, np.ndarray):
-        output = output.flatten().tolist()
-
     ret = []
-    idxArr = []
-    for i in range(g_outputSize): 
-        idxArr.append(i)
-
-    l_batchsz = len(output) / g_outputSize 
-    for i in range(l_batchsz):
-        inputImage = fn 
-        startIdx = i * g_outputSize 
-        vals = output[startIdx:startIdx + g_outputSize]
-        top5 = sorted(zip(vals, idxArr), reverse=True)[:5]
-        for j in range(len(top5)):
-            ret.append((inputImage, j, top5[j][0], g_labelarray[top5[j][1]]))
-
-    # print("get_classification: {0}.\n".format(ret))
+    for i, p in enumerate(pl):
+        topXs = xdnn_io.getTopK(output[i,...], labels, topK)
+        for prob, lbl in topXs:
+            ret.append([p, i, prob, lbl])
     return ret
 
+
 def img_classify(msg):
-    global g_inputs
-    global g_inputbuf
-    global g_fpgaOutput
-    global g_weightsBlob
-    global g_fcWeight
-    global g_fcBias
+    global g_args
+    global g_ctxt
 
     # message is a rowset, one col, a list of file names.
     rs = msg.rowset
@@ -141,43 +95,26 @@ def img_classify(msg):
     # Lock the fpga device.   config is protected by this lock as well.
 
     fpga_lock.acquire()
-    ret = None
+    ret = []
     
-    for i in range(rs.columns[0].nrow):
-        fname = rs.columns[0].sdata[i]
-        print("Running classification for images: {0}\n".format(fname))
-        print("Prepare inputs ...\n")
-
-        # g_batchSize = 1, for now.
-        print "g_inputs", g_inputs
-        g_inputs[0] = xdnn_io.loadImageBlobFromFile(str(fname), g_raw_scale, g_mean, g_input_scale, g_img_h, g_img_w)
-
-        print("Quantize inputs ...\n") 
-        quantizeInputs = xdnn.quantizeInputs(g_firstFpgaLayerName, g_fpgaCfgFile, g_scaleB, g_inputs)
-
-        print("Prepare inputs for fpga inputs ...\n") 
-        fpgaInputs = xdnn.prepareInputsForFpga(quantizeInputs, g_fpgaCfgFile, g_scaleB, -1, g_firstFpgaLayerName) 
-
-        print("Run FPGA commands ...\n") 
-        xdnn.execute(g_netFile,
-                g_weightsBlob, fpgaInputs, g_fpgaOutput,
-                g_batchSize,
-                g_fpgaCfgFile, g_scaleB, g_PE)
-
-        print("Compute FC ...\n")
-        fcOutput = xdnn.computeFC(g_fcWeight, g_fcBias, g_fpgaOutput,
-                g_batchSize, g_outputSize, g_fpgaOutputSize, g_useBlas)
-
-        print("Softmax ...\n")
-        softmaxOut = xdnn.computeSoftmax(fcOutput, g_batchSize) 
-        ret = get_classification(softmaxOut, fname) 
+    for i in xrange(0, rs.columns[0].nrow, g_args['batch_sz']):
+        pl = []
+        for j in range(g_args['batch_sz']):
+            fname = str(rs.columns[0].sdata[i + j])
+            print("Running classification for {0}-th images: {1}\n".format(i+j, fname))
+            g_ctxt['batch_array'][j, ...], _ = xdnn_io.loadImageBlobFromFile(fname,
+                    g_args['img_raw_scale'], g_args['img_mean'], g_args['img_input_scale'],
+                    g_args['in_shape'][2], g_args['in_shape'][1])
+            pl.append(fname)
+        
+        g_ctxt['fpgaRT'].execute(g_ctxt['batch_array'], g_ctxt['fpgaOutput'])
+        xdnn.computeFC(g_ctxt['fcWeight'], g_ctxt['fcBias'], g_ctxt['fpgaOutput'], 
+                g_args['batch_sz'], g_args['outsz'], g_args['fpgaoutsz'],
+                g_ctxt['fcOutput'])
+        softmaxOut = xdnn.computeSoftmax(g_ctxt['fcOutput'])
+        ret = ret + get_classification(softmaxOut, pl) 
 
     fpga_lock.release()
-
-    # Now construct return msg
-    if ret == None:
-        print("Return None: ???\n")
-        return None
 
     retmsg = xdrive_pb2.XMsg()
     rs = retmsg.rowset
@@ -192,16 +129,15 @@ def img_classify(msg):
     col4.nrow = len(ret)
 
     for i in range(len(ret)):
-        (a, b, c, d) = ret[i]
         # print("Return {0}, {1}, {2}, {3}.\n".format(a, b, c, d))
         col1.nullmap.append(False)
-        col1.sdata.append(a)
+        col1.sdata.append(ret[i][0])
         col2.nullmap.append(False)
-        col2.i32data.append(b)
+        col2.i32data.append(ret[i][1])
         col3.nullmap.append(False)
-        col3.f64data.append(c)
+        col3.f64data.append(ret[i][2])
         col4.nullmap.append(False)
-        col4.sdata.append(d)
+        col4.sdata.append(ret[i][3])
 
     return retmsg
 

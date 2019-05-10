@@ -20,5 +20,10 @@ ssh-keyscan $MYID >> /home/mluser/.ssh/known_hosts
 (cd /home/mluser/quicksetup/u16.alveo && bash 04_xdrive.sh)
 (cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh)
 
+# jupyter
+jupyter notebook --generate-config
+echo "c.NotebookApp.ip = '*'" >> /home/mluser/.jupyter/jupyter_notebook_config.py
+echo "c.NotebookApp.open_browser = False" >> /home/mluser/.jupyter/jupyter_notebook_config.py
+
 # Start yet another shell for interactive work.
-bash
+jupyter notebook --ip=0.0.0.0

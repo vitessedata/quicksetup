@@ -14,13 +14,15 @@ import xdrive_pb2, server
 fpga_lock = threading.RLock()
 
 g_mlsuite = os.getenv("MLSUITE_ROOT", "/opt/MLsuite")
+g_data = g_mlsuite + "/examples/classification/data/"
 g_platform = "alveo-u200"
+
 g_xclbin = g_mlsuite + "/overlaybins/alveo-u200/overlay_2.xclbin"
-g_datadir = g_mlsuite + "/examples/classification/data"
-g_netcfg = g_datadir + "/googlenet_v1_56.json" 
+g_datadir = g_data + "googlenet_v1_data"
+g_netcfg = g_data + "googlenet_v1_56.json" 
 g_fpgaoutsz = "1024"
 g_labels = g_mlsuite + "/examples/classification/synset_words.txt"
-g_quantizecfg = g_datadir + "/googlenet_v1_8b.json"
+g_quantizecfg = g_data + "/googlenet_v1_8b.json"
 g_img_input_scale = "1.0"
 g_batch_sz = "1"
 

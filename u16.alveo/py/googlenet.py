@@ -69,9 +69,9 @@ def init_fpga():
     g_ctxt['fcOutput'] = np.empty((g_args['batch_sz'], g_args['outsz'],), dtype=np.float32, order='C')
     g_ctxt['batch_array'] = np.empty(((g_args['batch_sz'],) + g_args['in_shape']), dtype=np.float32, order='C')
     g_ctxt['labels'] = xdnn_io.get_labels(g_args['labels'])
-
     # golden?   What is that?
     # Seems we are done.
+    print(" --- FPGA INITIALIZED! ---\n")
 
 def get_classification(output, pl, labels, topK=5): 
     # See xdnn_io.py, but the code there will just print to stdout.
@@ -114,7 +114,7 @@ def img_classify(msg):
                 g_args['batch_sz'], g_args['outsz'], g_args['fpgaoutsz'],
                 g_ctxt['fcOutput'])
         softmaxOut = xdnn.computeSoftmax(g_ctxt['fcOutput'])
-        ret = ret + get_classification(softmaxOut, pl) 
+        ret = ret + get_classification(softmaxOut, pl, g_ctxt['labels'])
 
     fpga_lock.release()
 

@@ -4,6 +4,12 @@
 sudo locale-gen en_US.utf8 
 # Start ssh
 sudo service ssh start
+#
+# Start gnet service
+# sudo systemctl enable gnet
+# sudo systemctl start gnet
+
+
 
 MYIP="$(hostname -I)"
 

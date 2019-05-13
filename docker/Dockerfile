@@ -68,11 +68,13 @@ RUN pip --no-cache-dir install\
 RUN groupadd users -g 100 -f && useradd -g users -ms /bin/bash mluser -u 1185 && usermod -aG sudo mluser && passwd -d mluser && \
  mkdir /scratch && chmod 777 /scratch && chmod 777 /opt && chmod 777 /tmp
 
-# VitesseData: Start sshd
+# VitesseData: Start sshd, password less sudo.
 RUN mkdir /var/run/sshd
 RUN /usr/sbin/sshd
+RUN echo "mluser ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 USER mluser
+
 
 # OpenBLAS Setup To /opt/OpenBLAS
 ENV LD_LIBRARY_PATH=/opt/OpenBLAS/lib
@@ -114,6 +116,10 @@ RUN cd /home/mluser/quicksetup/u16.alveo && bash 02_install.sh
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 03_initdb.sh
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 04_xdrive.sh 
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh 
+
+# Install gnet service
+RUN sudo cp /home/mluser/quicksetup/docker/gnet.service /etc/systemd/system/
+RUN sudo chmod +x /etc/systemd/system/gnet.service
 
 # Automatically Set Environment Variables
 RUN echo "export PATH=$PATH:~/.local/bin" >> /home/mluser/.bashrc

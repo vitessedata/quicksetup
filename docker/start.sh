@@ -22,8 +22,8 @@ ssh-keyscan $MYID >> /home/mluser/.ssh/known_hosts
 (cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh)
 
 # Install pg8000
-sudo pip install pg8000==1.12.4
-(cd /home/mluser/quicksetup/py/lib && sudo python setup.py install)
+# sudo pip install pg8000==1.12.4
+# (cd /home/mluser/quicksetup/py/lib && sudo python setup.py install)
 
 # Start gnet
 # This is rather tricky: docker does not like systemd, so that any attempt to 

@@ -62,7 +62,12 @@ RUN pip --no-cache-dir install\
  jupyter\
  ipykernel\
  matplotlib\
- enum34
+ enum34 \
+
+# dg.conn -- pg8000 1.13 is broken.
+# until everything upgrade to python3.x, use an older pg8000
+RUN pip --no-cache-dir install\
+ pg8000==1.12.4
 
 # Set up non-root user for file and process ownership
 RUN groupadd users -g 100 -f && useradd -g users -ms /bin/bash mluser -u 1185 && usermod -aG sudo mluser && passwd -d mluser && \
@@ -116,6 +121,9 @@ RUN cd /home/mluser/quicksetup/u16.alveo && bash 02_install.sh
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 03_initdb.sh
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 04_xdrive.sh 
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh 
+
+# Install 
+RUN cd /home/mluser/quicksetup/py/lib && sudo python setup.py install
 
 # Automatically Set Environment Variables
 RUN echo "export PATH=$PATH:~/.local/bin" >> /home/mluser/.bashrc

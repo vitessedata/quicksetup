@@ -31,4 +31,4 @@ export MASTER_DATA_DIRECTORY=$DATADIR/dg-1
 export GOPATH=$HOME/go
 export PATH=$PATH:/usr/local/go/bin
 
-
+source $DIR/deepgreendb/greenplum_path.sh

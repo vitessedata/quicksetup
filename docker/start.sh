@@ -33,5 +33,6 @@ echo "c.NotebookApp.open_browser = False" >> /home/mluser/.jupyter/jupyter_noteb
 cp /home/mluser/quicksetup/docker/misc/tmux.conf ~/.tmux.conf
 
 # Start a shell
+source 
 /bin/bash 
 

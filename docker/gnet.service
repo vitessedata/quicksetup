@@ -1,7 +1,0 @@
-[Unit]
-Description=Xilinx ml-suite googlenet for deepgreen
-After=Netwrok.target
-
-[Service]
-ExecStart=/quicksetup/docker/gnet.sh 
-

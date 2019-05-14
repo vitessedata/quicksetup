@@ -117,10 +117,6 @@ RUN cd /home/mluser/quicksetup/u16.alveo && bash 02_install.sh
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 04_xdrive.sh 
 # RUN cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh 
 
-# Install gnet service
-RUN sudo cp /home/mluser/quicksetup/docker/gnet.service /etc/systemd/system/
-RUN sudo chmod +x /etc/systemd/system/gnet.service
-
 # Automatically Set Environment Variables
 RUN echo "export PATH=$PATH:~/.local/bin" >> /home/mluser/.bashrc
 

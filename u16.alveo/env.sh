@@ -21,6 +21,9 @@ function fail
 # Scripts dir.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
+# Somehow, docker may not set $USER
+export USER=$(whoami)
+
 # All data resides in the following dir.
 export DATADIR=$DIR/data
 export MASTER_DATA_DIRECTORY=$DATADIR/dg-1

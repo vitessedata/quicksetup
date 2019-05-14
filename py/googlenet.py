@@ -14,21 +14,51 @@ import xdrive_pb2, server
 fpga_lock = threading.RLock()
 
 g_mlsuite = os.getenv("MLSUITE_ROOT", "/opt/MLsuite")
-g_data = g_mlsuite + "/examples/classification/data/"
+g_mode = os.getenv("MLSUITE_MODE", "example/classification") 
 g_platform = "alveo-u200"
-
-g_xclbin = g_mlsuite + "/overlaybins/alveo-u200/overlay_2.xclbin"
-g_datadir = g_data + "googlenet_v1_data"
-g_netcfg = g_data + "googlenet_v1_56.json" 
-g_fpgaoutsz = "1024"
-g_labels = g_mlsuite + "/examples/classification/synset_words.txt"
-g_quantizecfg = g_data + "/googlenet_v1_8b.json"
-g_img_input_scale = "1.0"
-g_batch_sz = "1"
 
 g_args = {}
 g_ctxt = {}
 
+def is_deploymode():
+    return g_mode == "deployment_modes"
+
+def build_xdnn_args():
+    if is_deploymode(): 
+        exdata = g_mlsuite + "/examples/deployment_modes/data" 
+        xclbin = g_mlsuite + "/overlaybins/alveo-u200/overlay_4.xclbin"
+        netcfg = exdata + "/googlenet_v1_8b_autoAllOpt.json"
+        weights = exdata + "/googlenet_v1_data.h5"
+        labels = g_mlsuite + "/examples/deployment_modes/synset_words.txt"
+        quantizecfg = exdata + "/googlenet_v1_8b_xdnnv3.json"
+        return [
+            "--xclbin", xclbin,
+            "--netcfg", netcfg, 
+            "--weights", weights,
+            "--labels", labels, 
+            "--quantizecfg", quantizecfg,
+            "--img_input_scale", "1.0", 
+            "--batch_sz", "1", 
+            "--images", "/tmp" 
+            ]
+    else:
+        exdata = g_mlsuite + "/examples/classification/data/"
+        xclbin = g_mlsuite + "/overlaybins/alveo-u200/overlay_2.xclbin"
+        netcfg = exdata + "/googlenet_v1_56.json" 
+        labels = g_mlsuite + "/examples/classification/synset_words.txt"
+        datadir = exdata + "/googlenet_v1_data"
+        quantizecfg = exdata + "/googlenet_v1_8b.json"
+        return [
+            "--xclbin", xclbin,
+            "--netcfg", netcfg, 
+            "--fpgaoutsz", "1024", 
+            "--datadir", datadir,
+            "--labels", labels, 
+            "--quantizecfg", quantizecfg,
+            "--img_input_scale", "1.0", 
+            "--batch_sz", "1" ,
+            "--images", "/tmp" 
+            ]
 
 def init_fpga():
     # Instead of using command line, we hard code it here. 
@@ -36,18 +66,8 @@ def init_fpga():
     # 
     global g_args
     global g_ctxt
-    xdnnArgs = [
-            "--xclbin", g_xclbin,
-            "--netcfg", g_netcfg, 
-            "--fpgaoutsz", g_fpgaoutsz, 
-            "--datadir", g_datadir,
-            "--labels", g_labels, 
-            "--quantizecfg", g_quantizecfg,
-            "--img_input_scale", g_img_input_scale,
-            "--batch_sz", g_batch_sz,
-            "--images", "/tmp" 
-            ]
     print(" --- INIT FPGA --- \n")
+    xdnnArgs = build_xdnn_args()
     print(xdnnArgs)
     g_args = xdnn_io.processCommandLine(xdnnArgs)
     print(" --- After parsing --- \n")
@@ -55,6 +75,9 @@ def init_fpga():
 
     print(" --- Create handle --- \n")
     ret, handles = xdnn.createHandle(g_args['xclbin'], "kernelSxdnn_0")
+    if ret != 0:
+        print(" --- !!! FAILED: Cannot create handle. --- \n")
+        sys.exit(1)
 
     print(" --- Create fpgaRT --- \n")
     fpgaRT = xdnn.XDNNFPGAOp(handles, g_args)
@@ -64,13 +87,23 @@ def init_fpga():
     fcWeight, fcBias = xdnn_io.loadFCWeightsBias(g_args)
     g_ctxt["fcWeight"] = fcWeight
     g_ctxt["fcBias"] = fcBias
+    
+    print(" --- Init input input/output area --- \n")
+    if is_deploymode(): 
+        g_ctxt['fpgaOutput'] = fpgaRT.getOutputs()
+        g_ctxt['fpgaInput'] = fpgaRT.getInputs()
+        g_ctxt['inShape'] = (g_args['batch_sz'],) + tuple(fpgaRT.getInputDescriptors().itervalues().next()[1:])
+    else:
+        g_ctxt['fpgaOutput'] = np.empty((g_args['batch_sz'], g_args['fpgaoutsz'],), dtype=np.float32, order='C')
+        g_ctxt['batch_array'] = np.empty(((g_args['batch_sz'],) + g_args['in_shape']), dtype=np.float32, order='C')
 
-    g_ctxt['fpgaOutput'] = np.empty((g_args['batch_sz'], g_args['fpgaoutsz'],), dtype=np.float32, order='C')
     g_ctxt['fcOutput'] = np.empty((g_args['batch_sz'], g_args['outsz'],), dtype=np.float32, order='C')
-    g_ctxt['batch_array'] = np.empty(((g_args['batch_sz'],) + g_args['in_shape']), dtype=np.float32, order='C')
+
+    print (" --- Get lables --- \n")
     g_ctxt['labels'] = xdnn_io.get_labels(g_args['labels'])
     # golden?   What is that?
     # Seems we are done.
+
     print(" --- FPGA INITIALIZED! ---\n")
 
 def get_classification(output, pl, labels, topK=5): 
@@ -99,20 +132,34 @@ def img_classify(msg):
     fpga_lock.acquire()
     ret = []
     
+    if is_deploymode():
+        firstInput = g_ctxt['fpgaInput'].itervalues().next()
+        firstOutput = g_ctxt['fpgaOutput'].itervalues().next()
+
     for i in xrange(0, rs.columns[0].nrow, g_args['batch_sz']):
         pl = []
         for j in range(g_args['batch_sz']):
             fname = str(rs.columns[0].sdata[i + j])
             print("Running classification for {0}-th images: {1}\n".format(i+j, fname))
-            g_ctxt['batch_array'][j, ...], _ = xdnn_io.loadImageBlobFromFile(fname,
+            if is_deploymode():
+                firstInput[j, ...], _ = xdnn_io.loadImageBlobFromFile(fname,
                     g_args['img_raw_scale'], g_args['img_mean'], g_args['img_input_scale'],
-                    g_args['in_shape'][2], g_args['in_shape'][1])
+                    g_ctxt['inShape'][2], g_ctxt['inShape'][3])
+            else:
+                g_ctxt['batch_array'][j, ...], _ = xdnn_io.loadImageBlobFromFile(fname,
+                    g_args['img_raw_scale'], g_args['img_mean'], g_args['img_input_scale'],
+                    g_ctxt['in_shape'][2], g_ctxt['in_shape'][1])
             pl.append(fname)
         
-        g_ctxt['fpgaRT'].execute(g_ctxt['batch_array'], g_ctxt['fpgaOutput'])
-        xdnn.computeFC(g_ctxt['fcWeight'], g_ctxt['fcBias'], g_ctxt['fpgaOutput'], 
+        if is_deploymode():
+            g_ctxt['fpgaRT'].execute(g_ctxt['fpgaInput'], g_ctxt['fpgaOutput'])
+            xdnn.computeFC(g_ctxt['fcWeight'], g_ctxt['fcBias'], firstOutput, g_ctxt['fcOutput'])
+        else:
+            g_ctxt['fpgaRT'].execute(g_ctxt['batch_array'], g_ctxt['fpgaOutput'])
+            xdnn.computeFC(g_ctxt['fcWeight'], g_ctxt['fcBias'], g_ctxt['fpgaOutput'], 
                 g_args['batch_sz'], g_args['outsz'], g_args['fpgaoutsz'],
                 g_ctxt['fcOutput'])
+
         softmaxOut = xdnn.computeSoftmax(g_ctxt['fcOutput'])
         ret = ret + get_classification(softmaxOut, pl, g_ctxt['labels'])
 

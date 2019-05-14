@@ -22,7 +22,10 @@ ssh-keyscan $MYID >> /home/mluser/.ssh/known_hosts
 (cd /home/mluser/quicksetup/u16.alveo && bash 05_sql.sh)
 
 # Start gnet
-bash ./gnet.sh
+# This is rather tricky: docker does not like systemd, so that any attempt to 
+# use systemd will incur horrible hack.   Note that we setup a bunch of env
+# in side the gnet.sh, so better let the whole gnet.sh run nohup.
+(nohup bash ./gnet.sh > /tmp/gnet.out 2>&1) &
 
 # jupyter
 jupyter notebook --generate-config
@@ -33,6 +36,5 @@ echo "c.NotebookApp.open_browser = False" >> /home/mluser/.jupyter/jupyter_noteb
 cp /home/mluser/quicksetup/docker/misc/tmux.conf ~/.tmux.conf
 
 # Start a shell
-source 
 /bin/bash 
 

@@ -2,6 +2,7 @@
 # googlenet test
 #
 
+import sys
 import xdrive_pb2, server
 
 if __name__=='__main__':
@@ -13,7 +14,7 @@ if __name__=='__main__':
         col = xmsg.rowset.columns.add()
         col.nrow = 1
         col.nullmap.append(False)
-        col.sdata.append("./test/" + imgs[ii]) 
+        col.sdata.append(sys.argv[1] + "/test/" + imgs[ii]) 
 
         server.writeXMsg(sock, xmsg)
         ret = server.readXMsg(sock)

@@ -32,6 +32,6 @@ echo "c.NotebookApp.open_browser = False" >> /home/mluser/.jupyter/jupyter_noteb
 # tmux
 cp /home/mluser/quicksetup/docker/misc/tmux.conf ~/.tmux.conf
 
-# Start yet another shell for interactive work.
-# jupyter notebook --ip=0.0.0.0
-tmux
+# Start a shell
+/bin/bash 
+

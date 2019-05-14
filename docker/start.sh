@@ -25,7 +25,7 @@ ssh-keyscan $MYID >> /home/mluser/.ssh/known_hosts
 # This is rather tricky: docker does not like systemd, so that any attempt to 
 # use systemd will incur horrible hack.   Note that we setup a bunch of env
 # in side the gnet.sh, so better let the whole gnet.sh run nohup.
-(nohup bash ./gnet.sh > /tmp/gnet.out 2>&1) &
+(nohup bash /home/mluser/quicksetup/docker/gnet.sh > /tmp/gnet.out 2>&1) &
 
 # jupyter
 jupyter notebook --generate-config

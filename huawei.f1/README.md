@@ -21,3 +21,5 @@ cd quicksetup/huawei.f1
 Download deepgreen binary and golang 1.9.5.  It also downloads
 a test image datasets.
 
+## bash ./02\_install.sh
+

@@ -24,6 +24,13 @@ see what googlenet classifies some panda images.
 psql -f /home/mluser/quicksetup/sql/gnet2.sql
 ```
 
+or, you can run 
+```
+cd quicksetup/docker
+bash ./runnb.sh
+```
+to start a jupyter notebook.  
+
 Installation Notes:
 -------------------
 * user is `mluser`

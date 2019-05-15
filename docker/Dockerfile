@@ -62,7 +62,8 @@ RUN pip --no-cache-dir install\
  jupyter\
  ipykernel\
  matplotlib\
- enum34 \
+ enum34 
+
 
 # dg.conn -- pg8000 1.13 is broken.
 # until everything upgrade to python3.x, use an older pg8000

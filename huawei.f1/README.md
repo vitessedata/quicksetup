@@ -46,4 +46,15 @@ Set up xdrive
 ## bash ./05\_sql.sh
 Set up a bunch of udfs.
 
-
+## Start googlenet.py
+Run the following as root, I would suggest running this under
+a tmux session
+```
+sudo bash
+cd py
+source conda2.sh
+rungnet.sh 
+```
+This is yet another ml-suite flavor.  I lost count how many flavors.
+Huawei cloud installation (at least the process we carried out) rely
+heavily on being root.  Somehow, we should fix this ...   Later.

@@ -40,5 +40,10 @@ should pay attention to firewalld, RemoveIPC, limits.conf and sysctmctl.conf
 ## bash ./03\_initdb.sh
 This will create a good database :-)
 
-## 
+## bash ./04\_xdrive.sh
+Set up xdrive
+
+## bash ./05\_sql.sh
+Set up a bunch of udfs.
+
 

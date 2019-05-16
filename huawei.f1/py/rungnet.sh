@@ -1,6 +1,7 @@
 #!/bin/bash
 
+export MLSUITE_ROOT=/root/vitessedata/ml-suite
+source $MLSUITE_ROOT/overlaybins/setup.sh huawei
+
 rm -f /tmp/ml.sock
-(nohup python ./googlenet.py > /tmp/gnet.out 2>&1) &
-sleep 1
-chmod 777 /tmp/ml.sock
+python ./googlenet.py 

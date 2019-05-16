@@ -17,6 +17,9 @@ git clone https://github.com/vitessedata/quicksetup
 cd quicksetup/huawei.f1
 ```
 
+## bash ./00\_setup.sh
+Install python protobuf binding.
+
 ## bash ./01\_download.sh
 Download deepgreen binary and golang 1.9.5.  It also downloads
 a test image datasets.

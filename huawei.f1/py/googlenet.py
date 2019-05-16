@@ -93,7 +93,7 @@ def init_fpga():
             g_labelarray.append(line.strip())
 
     print (" --- prepare inputs --- \n")
-    g_inputs = np.zeros((g_batchSize, g_img_c, g_img_h, g_img_w), dtype=np.float32);
+    g_inputs = np.zeros((g_batchSize, g_img_c*g_img_h*g_img_w), dtype=np.float32);
     g_inputbuf = np.zeros((g_batchSize, g_img_c, g_img_h, g_img_w), dtype=np.float32);
 
     print "g_inputs", g_inputs
@@ -150,10 +150,10 @@ def img_classify(msg):
 
         # g_batchSize = 1, for now.
         print "g_inputs", g_inputs
-        g_inputs[0] = xdnn_io.loadImageBlobFromFile(str(fname), g_raw_scale, g_mean, g_input_scale, g_img_h, g_img_w)
+        g_inputs[0] = xdnn_io.loadImageBlobFromFile(str(fname), g_mean, g_img_h, g_img_w)
 
         print("Quantize inputs ...\n") 
-        quantizeInputs = xdnn.quantizeInputs(g_firstFpgaLayerName, g_fpgaCfgFile, g_scaleB, g_inputs)
+        quantizeInputs = xdnn.quantizeInputs(g_firstFpgaLayerName, g_inputs, None, None, g_fpgaCfgFile, g_scaleB)
 
         print("Prepare inputs for fpga inputs ...\n") 
         fpgaInputs = xdnn.prepareInputsForFpga(quantizeInputs, g_fpgaCfgFile, g_scaleB, -1, g_firstFpgaLayerName) 

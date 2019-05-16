@@ -14,4 +14,7 @@ set -x
 # sudo pip install face_recognition
 
 # centos 7.3   
+sudo yum install tmux
 sudo pip install protobuf
+
+

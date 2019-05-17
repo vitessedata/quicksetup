@@ -50,7 +50,15 @@ This will create a good database :-)
 Set up xdrive
 
 ## bash ./05\_sql.sh
-Set up a bunch of udfs.
+Set up a bunch of udfs. It is a good time to check if database and xdrive
+are started successfully.
+```
+. env.sh
+psql 
+
+# in psql prompt
+select dir, basename from imagefiles limit 10;
+```
 
 ## Start googlenet.py
 Run the following as root, I would suggest running this under
@@ -81,5 +89,4 @@ Note that you must start googlenet.py and do the chmod as above.
 psql -f ../sql/gnet2.sql
 ```
 Should classify bunch of pandas.
-
 

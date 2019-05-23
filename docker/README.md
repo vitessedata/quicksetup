@@ -13,25 +13,7 @@ Build Docker Image
 bash docker_build.sh
 ```
 
-Use Docker Image
-=================
-```
-bash docker_run.sh
-```
-This will start a docker.  You are given a shell.   Run the following, you should 
-see what googlenet classifies some panda images.
-```
-psql -f /home/mluser/quicksetup/sql/gnet2.sql
-```
-
-or, you can run 
-```
-cd quicksetup/docker
-bash ./runnb.sh
-```
-to start a jupyter notebook.  
-
-Installation Notes:
+Docker image notes: 
 -------------------
 * user is `mluser`
 * ml-suite is installed in `/opt/ml-suite`
@@ -44,7 +26,49 @@ Installation Notes:
 * cd into /home/mluser/quicksetup/docker, run runnb.sh will start a jupyter notebook.
   It will giva you a url that you can open a brower.   The really nice thing about
   jupyter is that is has a terminal :-)
-* imageclassify ipynb coming soon.
+
+
+Use Docker Image
+=================
+```
+bash docker_run.sh
+```
+This will start a docker.  You are given a shell.   Run the following, you should 
+see what googlenet classifies some panda images.
+
+Or alternatively, you can run a docker image that we have published on dockerhub
+```
+bash dockerhub_run.sh
+```
+
+Test using psql
+---------------
+
+```
+psql -f /home/mluser/quicksetup/sql/gnet2.sql
+```
+
+Will run a query that classifies all images under the panda dir.   The result of
+the query will be image files, with classification, and score.
+
+```
+psql -f /home/mluser/quicksetup/sql/panda.sql 
+```
+
+This query will find panda from all the images (over 9000 images).   It will take
+long time to run, probably one or two minutes.
+
+
+Test using jupyter notebook
+---------------------------
+
+```
+cd /home/mluser/quicksetup/docker
+bash ./runnb.sh
+```
+to start a jupyter notebook.   It will print out a url, copy paste that url to a browser and 
+update ip address (you can use the ip address of the host, or, 127.0.0.1 if your host is your gui workstation) 
+click on nb/googlenet.ipynb.
 
 Debug Docker 
 ============

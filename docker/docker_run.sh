@@ -3,7 +3,7 @@
 user=`whoami`
 
 sudo \
-docker run -it --rm --hostname=dg --net=dgnet --ip=172.20.0.16 --privileged -w /opt/ml-suite \
+docker run -it --rm --hostname=dg --net=dgnet --ip=172.20.0.16 -p 8888:8888 --privileged -w /opt/ml-suite \
 	-v /dev:/dev -v /opt/xilinx:/opt/xilinx	\
 	--env PLATFORM=alveo-u200				\
 	$user/xilinx-ml-suite:latest \

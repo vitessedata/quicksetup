@@ -148,7 +148,7 @@ def img_classify(msg):
             else:
                 g_ctxt['batch_array'][j, ...], _ = xdnn_io.loadImageBlobFromFile(fname,
                     g_args['img_raw_scale'], g_args['img_mean'], g_args['img_input_scale'],
-                    g_ctxt['in_shape'][2], g_ctxt['in_shape'][1])
+                    g_args['in_shape'][2], g_args['in_shape'][1])
             pl.append(fname)
         
         if is_deploymode():

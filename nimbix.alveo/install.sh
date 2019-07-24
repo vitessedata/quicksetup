@@ -58,3 +58,55 @@ wget https://s3.amazonaws.com/vitessedata/download/deepgreendb.18.19.ubuntu16.x8
 wget https://dl.google.com/go/go1.9.5.linux-amd64.tar.gz && pass || fail
 wget http://www.vision.caltech.edu/Image_Datasets/Caltech101/101_ObjectCategories.tar.gz
 wget https://github.com/vitessedata/quicksetup/archive/master.zip 
+
+# 02_install.sh
+mkdir -p ~/go
+sudo tar -C /usr/local -xzf go1.9.5.linux-amd64.tar.gz
+printf "\n\n\n" | bash ./deepgreendb.*.bin --accept-license
+unzip master.zip
+
+# 03_initdb.sh
+source ./deepgreendb/greenplum_path.sh
+
+rm -fr data && pass || fail
+mkdir -p data && pass || fail
+rm -fr monagent && pass || fail
+mkdir -p monagent && pass || fail
+
+cp quicksetup-master/nimbix.alveo/cluster.conf .
+cp quicksetup-master/nimbix.alveo/hostfile .
+
+gpinitsystem -c cluster.conf --lc-collate=C
+createdb nimbix 
+
+# 04_xdrive.sh
+rm -fr xdrive && pass || fail
+mkdir -p xdrive && pass || fail
+mkdir -p xdrive/images && pass || fail
+
+rm -f ./xdrive.toml 
+
+echo "
+[xdrive]
+dir = \"$DIR/xdrive\"
+pluginpath = [\"$DIR/xdrive/plugin\"] 
+port=31416
+host = [ \"localhost\" ]
+
+[[xdrive.mount]]
+name = \"images\" 
+argv = [\"dgtools/ls_file\", \"$DIR/xdrive/images\"] 
+" >> xdrive.toml
+
+xdrctl deploy ./xdrive.toml
+xdrctl start ./xdrive.toml
+
+mkdir -p $DIR/xdrive/plugin/dgtools && pass || fail
+cp quicksetup-master/xdrive/ls_file $DIR/xdrive/plugin/dgtools/ && pass || fail
+tar -C ./xdrive/images -xzf 101_ObjectCategories.tar.gz && pass || fail
+
+
+# install sql scripts
+dg setup -all nimbix
+psql -f sql/img.sql nimbix
+

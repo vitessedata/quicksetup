@@ -76,7 +76,7 @@ mkdir -p monagent && pass || fail
 cp quicksetup-master/nimbix.alveo/cluster.conf .
 cp quicksetup-master/nimbix.alveo/hostfile .
 
-gpinitsystem -c cluster.conf --lc-collate=C
+gpinitsystem -a -c cluster.conf --lc-collate=C
 createdb nimbix 
 
 # 04_xdrive.sh
@@ -104,9 +104,10 @@ xdrctl start ./xdrive.toml
 mkdir -p $DIR/xdrive/plugin/dgtools && pass || fail
 cp quicksetup-master/xdrive/ls_file $DIR/xdrive/plugin/dgtools/ && pass || fail
 tar -C ./xdrive/images -xzf 101_ObjectCategories.tar.gz && pass || fail
-
+mkdir -p ./xdrive/images/search
+cp ./xdrive/images/101_ObjectCategories/soccer_ball/image_0001.jpg ./xdrive/images/search/object.jpg
 
 # install sql scripts
 dg setup -all nimbix
-psql -f sql/img.sql nimbix
+psql -f quicksetup-master/sql/img.sql nimbix
 

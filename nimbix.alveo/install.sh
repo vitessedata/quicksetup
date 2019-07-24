@@ -42,9 +42,19 @@ sudo apt install -y tmux
 sudo apt install -y python-opencv
 sudo apt install -y python-protobuf 
 sudo apt install -y python-pip
+sudo apt install -y python3-pip
 sudo pip install --upgrade pip
 sudo pip install --upgrade protobuf
 sudo pip install face_recognition
+sudo pip3 install --upgrade pip
+sudp pip3 install numpy \
+	opencv-python \
+	jupyter \
+	ipykernel \
+	matplotlib \
+	enum34 
+
+
 
 # /bin/sh was symlinked to /bin/dash in ubuntu, not good.
 sudo rm /bin/sh
@@ -76,7 +86,9 @@ mkdir -p monagent && pass || fail
 cp quicksetup-master/nimbix.alveo/cluster.conf .
 cp quicksetup-master/nimbix.alveo/hostfile .
 
-gpinitsystem -a -c cluster.conf --lc-collate=C
+# I don't know why, but gpinitsystem will exit current shell.
+# the || pass is a hack to work around this.
+gpinitsystem -a -q -c cluster.conf --lc-collate=C || pass
 createdb nimbix 
 
 # 04_xdrive.sh
@@ -111,3 +123,5 @@ cp ./xdrive/images/101_ObjectCategories/soccer_ball/image_0001.jpg ./xdrive/imag
 dg setup -all nimbix
 psql -f quicksetup-master/sql/img.sql nimbix
 
+# install python dg module (for jupyter).
+(cd quicksetup-master/py/lib; python3 setup.py install --user)

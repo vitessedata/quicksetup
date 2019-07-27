@@ -47,7 +47,7 @@ sudo pip install --upgrade pip
 sudo pip install --upgrade protobuf
 sudo pip install face_recognition
 sudo pip3 install --upgrade pip
-sudp pip3 install numpy \
+sudo pip3 install numpy \
 	opencv-python \
 	jupyter \
 	ipykernel \

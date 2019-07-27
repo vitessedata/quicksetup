@@ -39,6 +39,7 @@ export PATH=$PATH:/usr/local/go/bin
 # install necessary python stuff.
 sudo apt update
 sudo apt install -y tmux
+sudo apt install -y iputils-ping
 sudo apt install -y python-opencv
 sudo apt install -y python-protobuf 
 sudo apt install -y python-pip

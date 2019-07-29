@@ -10,7 +10,8 @@ Run the following command to install everything.
 ```
 mkdir v
 cd v
-wget -O - https://raw.githubusercontent.com/vitessedata/quicksetup/master/nimbix.alveo/install.sh | bash
+wget https://raw.githubusercontent.com/vitessedata/quicksetup/master/nimbix.alveo/install.sh 
+bash ./install.sh
 ```
 
 ## Start googlenet server.
